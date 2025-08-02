@@ -21,7 +21,7 @@ class JoyToWrenchNode(Node):
         self.get_logger().info(f'Publishing wrench messages to: {wrench_topic}')
 
         # Force magnitude (N)
-        self.force_mag = 5.0
+        self.force_mag = 40.0
 
     def joy_callback(self, msg: Joy):
         force_x = 0.0
@@ -33,10 +33,10 @@ class JoyToWrenchNode(Node):
 
         # X axis (forward/backwards)
         if len(buttons) > 8:
-            if buttons[5]:  # Up button -> +X force
-                force_x += self.force_mag
-            if buttons[8]:  # Down button -> -X force
+            if buttons[5]:  # Up button -> -X force
                 force_x -= self.force_mag
+            if buttons[8]:  # Down button -> +X force
+                force_x += self.force_mag
 
         # Y axis (left/right)
         if len(buttons) > 7:
