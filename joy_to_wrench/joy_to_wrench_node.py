@@ -21,7 +21,7 @@ class JoyToWrenchNode(Node):
         self.get_logger().info(f'Publishing wrench messages to: {wrench_topic}')
 
         # Force magnitude (N)
-        self.force_mag = 40.0
+        self.force_mag = 4.0
 
     def joy_callback(self, msg: Joy):
         force_x = 0.0
