@@ -3,6 +3,7 @@ from rclpy.node import Node
 
 from sensor_msgs.msg import Joy
 from geometry_msgs.msg import WrenchStamped, Wrench, Vector3
+from std_msgs.msg import Int32
 
 class JoyToWrenchNode(Node):
     def __init__(self):
@@ -15,6 +16,9 @@ class JoyToWrenchNode(Node):
         # Publisher for wrench
         self.wrench_pub = self.create_publisher(WrenchStamped, wrench_topic, 10)
 
+        # Publisher for override topic
+        self.override_pub = self.create_publisher(Int32, 'joystick/override', 10)
+
         # Subscriber to joystick
         self.joy_sub = self.create_subscription(Joy, '/joy', self.joy_callback, 10)
 
@@ -22,6 +26,11 @@ class JoyToWrenchNode(Node):
 
         # Force magnitude (N)
         self.force_mag = 17.0
+
+        # Add state to track button press
+        self.last_button_9_state = False
+        self.last_button_10_state = False
+        self.override_state = None
 
     def joy_callback(self, msg: Joy):
         force_x = 0.0
@@ -64,6 +73,28 @@ class JoyToWrenchNode(Node):
 
         # Publish wrench
         self.wrench_pub.publish(wrench_stamped)
+
+        # Publish decision based on button presses
+        if len(msg.buttons) > 10:
+            # Button 9 logic
+            if msg.buttons[9] and not self.last_button_9_state:  # Button 9 pressed
+                self.override_state = 1
+                decision_msg = Int32()
+                decision_msg.data = self.override_state
+                self.override_pub.publish(decision_msg)
+                self.get_logger().info('Published 1 to joystick/override')
+
+            # Button 10 logic
+            if msg.buttons[10] and not self.last_button_10_state:  # Button 10 pressed
+                self.override_state = 0
+                decision_msg = Int32()
+                decision_msg.data = self.override_state
+                self.override_pub.publish(decision_msg)
+                self.get_logger().info('Published 0 to joystick/override')
+
+            # Update last button states
+            self.last_button_9_state = msg.buttons[9]
+            self.last_button_10_state = msg.buttons[10]
 
 def main(args=None):
     rclpy.init(args=args)
