@@ -25,12 +25,15 @@ class JoyToWrenchNode(Node):
         self.get_logger().info(f'Publishing wrench messages to: {wrench_topic}')
 
         # Force magnitude (N)
-        self.force_mag = 17.0
+        self.force_mag = 10.0
 
         # Add state to track button press
         self.last_button_9_state = False
         self.last_button_10_state = False
         self.override_state = None
+
+        # Add state to track the last override value
+        self.last_override_value = None
 
     def joy_callback(self, msg: Joy):
         force_x = 0.0
@@ -68,11 +71,24 @@ class JoyToWrenchNode(Node):
 
         wrench_stamped = WrenchStamped()
         wrench_stamped.header.stamp = self.get_clock().now().to_msg()
-        wrench_stamped.header.frame_id = 'base_link'  # or whatever your robot's base frame is
+        wrench_stamped.header.frame_id = 'base_link' 
         wrench_stamped.wrench = wrench
 
         # Publish wrench
         self.wrench_pub.publish(wrench_stamped)
+
+        # Check if any of the specified buttons are pressed
+        override_value = 0
+        if len(buttons) > 8 and any(buttons[i] for i in [0, 1, 5, 6, 7, 8]):
+            override_value = 2
+
+        # Publish override value only if it has changed
+        if override_value != self.last_override_value:
+            decision_msg = Int32()
+            decision_msg.data = override_value
+            self.override_pub.publish(decision_msg)
+            self.get_logger().info(f'Published {override_value} to joystick/override')
+            self.last_override_value = override_value
 
         # Publish decision based on button presses
         if len(msg.buttons) > 10:
