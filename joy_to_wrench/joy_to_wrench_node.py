@@ -79,7 +79,7 @@ class JoyToWrenchNode(Node):
 
         # Check if any of the specified buttons are pressed
         override_value = 0
-        if len(buttons) > 8 and any(buttons[i] for i in [0, 1, 5, 6, 7, 8]):
+        if len(buttons) > 8 and any(buttons[i] for i in [0, 1, 5, 6, 7, 8, 10]):
             override_value = 2
 
         # Publish override value only if it has changed
