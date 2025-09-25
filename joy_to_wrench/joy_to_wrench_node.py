@@ -25,7 +25,7 @@ class JoyToWrenchNode(Node):
         self.get_logger().info(f'Publishing wrench messages to: {wrench_topic}')
 
         # Force magnitude (N)
-        self.force_mag = 10.0
+        self.force_mag = 7.0
 
         # Add state to track button press
         self.last_button_9_state = False
